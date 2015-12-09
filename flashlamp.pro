@@ -8,7 +8,7 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-include(../../qmqttlibandroid/qmqtt.pri)
+include(qmqttlibandroid/qmqtt.pri)
 
 TARGET = flashlamp
 TEMPLATE = app
