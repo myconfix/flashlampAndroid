@@ -13,12 +13,13 @@ flashlamp::flashlamp(QWidget *parent) :
 
     connect(client, SIGNAL(connected()), this, SLOT(onMQTT_Connected()));
     connect(client, SIGNAL(disconnected()), this, SLOT(onMQTT_disconnected()));
+    connect(client, SIGNAL(received(QMQTT::Message)),this, SLOT(onMQTT_Received(QMQTT::Message)));
 
     mqtt_setup();
 
     if(!client->isConnected())
     {
-        qDebug() << "Can not Connect MQTT Server";
+       // qDebug() << "Can not Connect MQTT Server";
     }
 }
 
@@ -30,27 +31,25 @@ flashlamp::~flashlamp()
 void flashlamp::on_Base_Dial_sliderMoved(int position)
 {
     ui->base_lcd_number->display(position);
-    long y=map(position,0,360,8,25);
-    mqtt_pub(mqtt_topic_base,QString::number(y));
+    mqtt_pub(mqtt_topic_base,QString::number(position));
 
 
 }
 
-void flashlamp::on_Holder_Dial_sliderMoved(int position)
+void flashlamp::on_Arm_Dial_sliderMoved(int position)
 {
     ui->arm_lcd_number->display(position);
-    long y=map(position,0,180,8,25);
-    mqtt_pub(mqtt_topic_arm,QString::number(y));
+    mqtt_pub(mqtt_topic_arm,QString::number(position));
 }
 void flashlamp::mqtt_setup()
 {
     try{
-        client->setHost("localhost");
-        client->setPort(1883);
+        client->setHost("192.168.43.137");
+        client->setPort(1884);
         //client->setUsername
         client->connect();
 
-        QMQTT::Message msg(0,"/myconfix/openqt","Hello Flash Lamp");
+        QMQTT::Message msg(0,"/openqt","Hello Flash Lamp From Android");
         client->publish(msg);
 
     }catch (...){
@@ -59,20 +58,44 @@ void flashlamp::mqtt_setup()
 }
 void flashlamp::onMQTT_Connected()
 {
-    qDebug() << "Connected";
+  //  qDebug() << "Connected";
+    mqtt_sub(mqtt_topic_sub);
 }
 void flashlamp::onMQTT_disconnected()
 {
-    qDebug() << "Disconnected";
+   // qDebug() << "Disconnected";
 }
 void flashlamp::mqtt_pub(QString topic, QString value)
 {
         QMQTT::Message msg(0,topic,value.toUtf8());
         client->publish(msg);
 }
-
-long flashlamp::map(long x, long in_min, long in_max, long out_min, long out_max)
+void flashlamp::mqtt_sub(QString topic)
 {
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    client->subscribe(topic,0);
+}
+void flashlamp::onMQTT_Received(const QMQTT::Message &message)
+{
+   // qDebug() <<"Topic : " << message.topic();
+   // qDebug() <<"Value : " << message.payload().toInt();
+
+    if(message.topic() == mqtt_topic_base){
+        ui->Base_Dial->setValue(message.payload().toInt());
+       // ui->Base_Dial->update();
+    }
+    if(message.topic() == mqtt_topic_arm){
+        ui->Arm_Dial->setValue(message.payload().toInt());
+        // ui->Base_Dial->update();
+    }
 }
 
+
+void flashlamp::on_Arm_Dial_valueChanged(int value)
+{
+     ui->arm_lcd_number->display(value);
+}
+
+void flashlamp::on_Base_Dial_valueChanged(int value)
+{
+    ui->base_lcd_number->display(value);
+}

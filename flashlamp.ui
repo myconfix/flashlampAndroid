@@ -131,7 +131,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QDial" name="Holder_Dial">
+       <widget class="QDial" name="Arm_Dial">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>2</horstretch>
@@ -139,7 +139,7 @@
          </sizepolicy>
         </property>
         <property name="maximum">
-         <number>180</number>
+         <number>90</number>
         </property>
         <property name="wrapping">
          <bool>false</bool>
